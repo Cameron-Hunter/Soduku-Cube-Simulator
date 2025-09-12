@@ -1,3 +1,20 @@
+/*
+    cube.cpp file for the Sodoku Cube Simulator
+    Made by Cameron Hunter
+    Programing buddy: Rian
+    Date Started: September 10, 2025
+    Date Finished: 9/12/2025
+
+    This file contains the functions that manipulate the cube
+    Functions to rotate each face clockwise and counterclockwise
+    This file also contains functions to print the cube,
+    reset the cube to the solved state, and randomize the cube.
+    This file also contains the function to calculate the heuristic value of the cube
+
+*/
+
+
+
 #include <iostream>
 #include "cube.h"
 #include <random>
@@ -58,6 +75,8 @@ void printCube(cube c){
      cout<<"        -------"<<endl;
 }
 
+
+
 // resets the cube to the solved state
 void resetCube(cube &c){
     cube resetCube;
@@ -82,231 +101,152 @@ void resetCube(cube &c){
 
 
 
-// makes the F rotation on the cube
-void rotateFrontClockwise(cube &c){
+// rotates the front face clockwise
+// Rubik's notation: F
 
-// temporary arrays to hold new face values
-int new_front [3][3];
-int new_top [3][3];
-int new_bottom [3][3];
-int new_left [3][3];
-int new_right [3][3];
+void rotateFrontClockwise(cube &c) {
+    // rotate the front face
+    int new_front[3][3];
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            new_front[j][2 - i] = c.front[i][j];
+        }    
+    }    
 
+    memcpy(c.front, new_front, sizeof(new_front));
 
-//Front face rotation shenanigans
-//front top row becomes left col reversed
-new_front[0][0] = c.front[2][0];
-new_front[0][1] = c.front[1][0];
-new_front[0][2] = c.front[0][0];
-
-//new front middle row
-new_front[1][0] = c.front[2][1];
-new_front[1][1] = c.front[1][1];
-new_front[1][2] = c.front[0][1];
-
-//new front bottom row
-new_front[2][0] = c.front[2][2];
-new_front[2][1] = c.front[1][2];
-new_front[2][2] = c.front[0][2];
-
-//Top face rotation shenanigans
-//top two rows stay the same 
-for(int i = 0; i < 2; i++){
-    for(int j = 0; j < 3; j++){
-        new_top[i][j] = c.top[i][j];
-    }
-}
-//top face bottom row becomes left face right col reversed
-new_top[2][0] = c.left[2][2];
-new_top[2][1] = c.left[1][2];
-new_top[2][2] = c.left[0][2];
-
-//left face rotation shenanigans
-//left face left col + middle col stays the same
-for(int i = 0; i < 3; i++){
-    new_left[i][0] = c.left[i][0];
-    new_left[i][1] = c.left[i][1];
-}
-//left face right col becomes bottom face top row
-new_left[0][2] = c.bottom[0][0];
-new_left[1][2] = c.bottom[0][1];
-new_left[2][2] = c.bottom[0][2];
-
-//bottom face rotation shenanigans
-//bottom face middle and bottom row stays the same
-for(int i = 1; i < 3; i++){
-    for(int j = 0; j < 3; j++){
-        new_bottom[i][j] = c.bottom[i][j];
-    }
-}
-//bottom face top row becomes right face left col
-new_bottom[0][0] = c.right[2][0];
-new_bottom[0][1] = c.right[1][0];
-new_bottom[0][2] = c.right[0][0];
-
-//right face rotation shenanigans
-
-//right face middle and right col stays the same
-for(int i = 0; i < 3; i++){
-    new_right[i][1] = c.right[i][1];
-    new_right[i][2] = c.right[i][2];
+    // cycle the edge strips
+    int temp[3];
+    // save bottom row of top
+    for (int i = 0; i < 3; i++){
+         temp[i] = c.top[2][i];          
     }
 
-//right face left col becomes top face bottom row reversed
-new_right[0][0] = c.top[2][0];
-new_right[1][0] = c.top[2][1];
-new_right[2][0] = c.top[2][2];
-
-//copy new arrays back to cube
-memcpy(c.front,  new_front,  sizeof(new_front));
-memcpy(c.top,    new_top,    sizeof(new_top));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.bottom, new_bottom, sizeof(new_bottom));
-memcpy(c.right,  new_right,  sizeof(new_right));
-
-}
-
-
-
-
-// makes the F' rotation on the cube
-void rotateFrontCounterclockwise(cube &c){
-// temporary arrays to hold new face values
-int new_front [3][3];
-int new_top [3][3];
-int new_bottom [3][3];
-int new_left [3][3];
-int new_right [3][3];
-
-
-//Front face rotation shenanigans
-//front top row becomes left col reversed
-new_front[0][0] = c.front[2][0];
-new_front[0][1] = c.front[1][0];
-new_front[0][2] = c.front[0][0];
-
-//new front middle row
-new_front[1][0] = c.front[2][1];
-new_front[1][1] = c.front[1][1];
-new_front[1][2] = c.front[0][1];
-
-//new front bottom row
-new_front[2][0] = c.front[2][2];
-new_front[2][1] = c.front[1][2];
-new_front[2][2] = c.front[0][2];
-
-//Top face rotation shenanigans
-//top two rows stay the same 
-for(int i = 0; i < 2; i++){
-    for(int j = 0; j < 3; j++){
-        new_top[i][j] = c.top[i][j];
+    for (int i = 0; i < 3; i++){
+        c.top[2][i]    = c.left[2 - i][2]; // top <- left col (reversed)
     }
+    for (int i = 0; i < 3; i++){
+         c.left[i][2]   = c.bottom[0][i];  // left <- bottom row
+    }  
+    for (int i = 0; i < 3; i++){
+        c.bottom[0][i] = c.right[2 - i][0];// bottom <- right col (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+        c.right[i][0]  = temp[i];          // right <- saved top row
+    }     
 }
-//top face bottom row becomes left face right col reversed
-new_top[2][0]=c.right[0][0];
-new_top[2][1]=c.right[1][0];
-new_top[2][2]=c.right[2][0];
 
-//left face rotation shenanigans
-//left face left col + middle col stays the same
-for(int i = 0; i < 3; i++){
-    new_left[i][0] = c.left[i][0];
-    new_left[i][1] = c.left[i][1];
-}
-//left face right col becomes bottom face top row
-new_left[0][2] = c.top[2][2];
-new_left[1][2] = c.top[2][1];
-new_left[2][2] = c.top[2][0];
 
-//bottom face rotation shenanigans
-//bottom face middle and bottom row stays the same
-for(int i = 1; i < 3; i++){
-    for(int j = 0; j < 3; j++){
-        new_bottom[i][j] = c.bottom[i][j];
+
+
+
+// rotates the front face counter-clockwise
+// Rubik's notation: F'
+void rotateFrontCounterclockwise(cube &c) {
+    // rotate the front face
+    int new_front[3][3];
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            new_front[2 - j][i] = c.front[i][j];
+        }
+    }
+
+    memcpy(c.front, new_front, sizeof(new_front));
+
+    // cycle the edge strips (reverse of F)
+    int temp[3];
+    for (int i = 0; i < 3; i++){
+         temp[i] = c.top[2][i];                 // save bottom row of top
+    }
+
+    for (int i = 0; i < 3; i++){
+         c.top[2][i]    = c.right[i][0];        // top <- right col
+    }     
+
+    for (int i = 0; i < 3; i++){
+         c.right[i][0]  = c.bottom[0][2 - i];   // right <- bottom row (reversed)
+    } 
+    for (int i = 0; i < 3; i++){
+         c.bottom[0][i] = c.left[i][2];         // bottom <- left col
+    }     
+    for (int i = 0; i < 3; i++){
+         c.left[i][2]   = temp[2 - i];          // left <- saved top row (reversed)
     }
 }
 
-//bottom face top row becomes right face left col
-new_bottom[0][0] = c.left[0][2];
-new_bottom[0][1] = c.left[1][2];
-new_bottom[0][2] = c.left[2][2];
 
-//right face rotation shenanigans
-//right face middle and right col stays the same
-for(int i = 0; i < 3; i++){
-    new_right[i][1] = c.right[i][1];
-    new_right[i][2] = c.right[i][2];
+
+
+
+// rotates the back face clockwise
+// Rubik's notation: B
+// (clockwise when looking directly at the back face)
+void rotateBackClockwise(cube &c) {
+    // rotate the back face itself
+    int new_back[3][3];
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            new_back[j][2 - i] = c.back[i][j];
+        }
+    }
+    memcpy(c.back, new_back, sizeof(new_back));
+
+    // cycle the adjacent strips
+    int temp[3];
+    for (int i = 0; i < 3; i++){
+         temp[i] = c.top[0][i];          // save top row of top
     }
 
-//right face left col becomes top face bottom row reversed
-new_right[0][0] = c.bottom[0][2];
-new_right[1][0] = c.bottom[0][1];
-new_right[2][0] = c.bottom[0][0];
-
-//copy new arrays back to cube
-memcpy(c.front,  new_front,  sizeof(new_front));
-memcpy(c.top,    new_top,    sizeof(new_top));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.bottom, new_bottom, sizeof(new_bottom));
-memcpy(c.right,  new_right,  sizeof(new_right));
-
+    for (int i = 0; i < 3; i++){
+         c.top[0][i]    = c.right[i][2];      // top <- right col
+    }
+    for (int i = 0; i < 3; i++){
+         c.right[i][2]  = c.bottom[2][2 - i]; // right <- bottom row (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+         c.bottom[2][i] = c.left[i][0];       // bottom <- left col
+    }
+    for (int i = 0; i < 3; i++){
+         c.left[i][0]   = temp[2 - i];        // left <- saved top row (reversed)
+    }
 }
 
 
 
 
-// makes the B rotation on the cube
-void rotateBackClockwise(cube &c)  {
-int new_back [3][3];
-int new_top [3][3];
-int new_bottom [3][3];
-int new_left [3][3];
-int new_right [3][3];
-
-//Back face rotation shenanigans
-
-//Top face rotation shenanigans
-
-//left face rotation shenanigans
-
-//bottom face rotation shenanigans
-
-//right face rotation shenanigans
-
-
-//copy new arrays back to cube
-memcpy(c.back,  new_back,  sizeof(new_back));
-memcpy(c.top,    new_top,    sizeof(new_top));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.bottom, new_bottom, sizeof(new_bottom));
-memcpy(c.right,  new_right,  sizeof(new_right));
-}
 
 // makes the B' rotation on the cube
-void rotateBackCounterClockwise(cube &c)  {
-int new_back [3][3];
-int new_top [3][3];
-int new_bottom [3][3];
-int new_left [3][3];
-int new_right [3][3];
+// This notation is a bit weird here because the back face is opposite the front face
+// so clockwise on the back face is counterclockwise on the front face
+//and vice versa
+void rotateBackCounterclockwise(cube &c)  {
+    // rotate the back face itself
+    int new_back[3][3];
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            new_back[2 - j][i] = c.back[i][j];
+        }
+    }
+    memcpy(c.back, new_back, sizeof(new_back));
 
-//Back face rotation shenanigans
+    // cycle the adjacent strips (reverse of B)
+    int temp[3];
+    for (int i = 0; i < 3; i++){
+         temp[i] = c.top[0][i];          // save top row of top
+    }
 
-//Top face rotation shenanigans
-
-//left face rotation shenanigans
-
-//bottom face rotation shenanigans
-
-//right face rotation shenanigans
-
-
-//copy new arrays back to cube
-memcpy(c.back,  new_back,  sizeof(new_back));
-memcpy(c.top,    new_top,    sizeof(new_top));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.bottom, new_bottom, sizeof(new_bottom));
-memcpy(c.right,  new_right,  sizeof(new_right));
+    for (int i = 0; i < 3; i++){
+         c.top[0][i]    = c.left[2 - i][0];   // top <- left col (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+         c.left[i][0]   = c.bottom[2][i];     // left <- bottom row
+    }
+    for (int i = 0; i < 3; i++){
+         c.bottom[2][i] = c.right[2 - i][2];  // bottom <- right col (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+         c.right[i][2]  = temp[i];            // right <- saved top row
+    }
 
 
 }
@@ -315,243 +255,293 @@ memcpy(c.right,  new_right,  sizeof(new_right));
 
 
 // makes the L rotation on the cube
+// equivalent to rotating the fronts left column downwards
 void rotateLeftClockwise(cube &c){
-int new_back [3][3];
-int new_top [3][3];
-int new_bottom [3][3];
-int new_left [3][3];
-int new_front [3][3];
+  // rotate the left face itself
+    int new_left[3][3];
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            new_left[j][2 - i] = c.left[i][j];
+        }
+    }
+    memcpy(c.left, new_left, sizeof(new_left));
 
-//left face rotation shenanigans
+    // cycle the adjacent strips
+    int temp[3];
+    for (int i = 0; i < 3; i++){
+        temp[i] = c.top[i][0];                  // save left col of top
+    }
 
-//front rotation shenanigans
-
-//back face rotation shenanigans
-
-//bottom face rotation shenanigans
-
-//top face rotation shenanigans
-
-
-//copy new arrays back to cube
-memcpy(c.back,  new_back,  sizeof(new_back));
-memcpy(c.top,    new_top,    sizeof(new_top));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.bottom, new_bottom, sizeof(new_bottom));
-memcpy(c.front,  new_front,  sizeof(new_front));
+    for (int i = 0; i < 3; i++){
+         c.top[i][0]    = c.back[2 - i][2];      // top <- back col (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+         c.back[i][2]   = c.bottom[2 - i][0];    // back <- bottom col (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+         c.bottom[i][0] = c.front[i][0];         // bottom <- front col
+    }
+    for (int i = 0; i < 3; i++){
+         c.front[i][0]  = temp[i];               // front <- saved top col
+    }
 }
 
 
 
 
 // makes the L' rotation on the cube
+// equivalent to rotating the fronts left column upwards
 void rotateLeftCounterclockwise(cube &c){
-int new_back [3][3];
-int new_top [3][3];
-int new_bottom [3][3];
-int new_left [3][3];
-int new_front [3][3];
+  // rotate the left face itself
+    int new_left[3][3];
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            new_left[2 - j][i] = c.left[i][j];
+        }
+    }
 
-//left face rotation shenanigans
+    memcpy(c.left, new_left, sizeof(new_left));
 
-//front rotation shenanigans
+    // cycle the adjacent strips (reverse of L)
+    int temp[3];
+    for (int i = 0; i < 3; i++){
+         temp[i] = c.top[i][0];          // save left col of top
+    }
 
-//back face rotation shenanigans
-
-//bottom face rotation shenanigans
-
-//top face rotation shenanigans
-
-
-//copy new arrays back to cube
-memcpy(c.back,  new_back,  sizeof(new_back));
-memcpy(c.top,    new_top,    sizeof(new_top));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.bottom, new_bottom, sizeof(new_bottom));
-memcpy(c.front,  new_front,  sizeof(new_front));
+    for (int i = 0; i < 3; i++){
+         c.top[i][0]    = c.front[i][0];     // top <- front col
+    }
+    for (int i = 0; i < 3; i++){
+         c.front[i][0]  = c.bottom[i][0];    // front <- bottom col
+    }
+    for (int i = 0; i < 3; i++){
+         c.bottom[i][0] = c.back[2 - i][2];  // bottom <- back col (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+        c.back[i][2]   = temp[2 - i];       // back <- saved top col (reversed)
+    }
 }
 
-
+    
 
 
 // makes the R rotation on the cube
+// equivalent to rotating the fronts right column upwards
 void rotateRightClockwise(cube &c){
-int new_back [3][3];
-int new_top [3][3];
-int new_bottom [3][3];
-int new_right [3][3];
-int new_front [3][3];
+  // rotate the right face itself
+    int new_right[3][3];
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            new_right[j][2 - i] = c.right[i][j];
+        }
+    }
+    memcpy(c.right, new_right, sizeof(new_right));
 
-//left face rotation shenanigans
+    // cycle the adjacent strips
+    int temp[3];
+    for (int i = 0; i < 3; i++){
+         temp[i] = c.top[i][2];          // save right col of top
+    }
 
-//front rotation shenanigans
-
-//back face rotation shenanigans
-
-//bottom face rotation shenanigans
-
-//top face rotation shenanigans
-
-
-//copy new arrays back to cube
-memcpy(c.back,   new_back,   sizeof(new_back));
-memcpy(c.top,    new_top,    sizeof(new_top));
-memcpy(c.right,  new_right,  sizeof(new_right));
-memcpy(c.bottom, new_bottom, sizeof(new_bottom));
-memcpy(c.front,  new_front,  sizeof(new_front));
+    for (int i = 0; i < 3; i++){
+         c.top[i][2]    = c.front[i][2];     // top <- front col
+    }
+    for (int i = 0; i < 3; i++){
+         c.front[i][2]  = c.bottom[i][2];    // front <- bottom col
+    }
+    for (int i = 0; i < 3; i++){
+         c.bottom[i][2] = c.back[2 - i][0];  // bottom <- back col (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+         c.back[i][0]   = temp[2 - i];       // back <- saved top col (reversed)
+    }
 }
 
 
 
 
 // makes the R' rotation on the cube
+// equivalent to rotating the fronts right column downwards
 void rotateRightCounterclockwise(cube &c){
-int new_back [3][3];
-int new_top [3][3];
-int new_bottom [3][3];
-int new_right [3][3];
-int new_front [3][3];
+ // rotate the right face itself
+    int new_right[3][3];
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            new_right[2 - j][i] = c.right[i][j];
+        }
+    }
+    memcpy(c.right, new_right, sizeof(new_right));
 
-//left face rotation shenanigans
+    // cycle the adjacent strips (reverse of R)
+    int temp[3];
+    for (int i = 0; i < 3; i++){
+         temp[i] = c.top[i][2];          // save right col of top
+    }
 
-//front rotation shenanigans
-
-//back face rotation shenanigans
-
-//bottom face rotation shenanigans
-
-//top face rotation shenanigans
-
-
-//copy new arrays back to cube
-memcpy(c.back,    new_back,    sizeof(new_back));
-memcpy(c.top,     new_top,     sizeof(new_top));
-memcpy(c.right,   new_right,   sizeof(new_right));
-memcpy(c.bottom,  new_bottom,  sizeof(new_bottom));
-memcpy(c.front,   new_front,   sizeof(new_front));
+    for (int i = 0; i < 3; i++){
+         c.top[i][2]    = c.back[2 - i][0];  // top <- back col (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+         c.back[i][0]   = c.bottom[2 - i][2];// back <- bottom col (reversed)
+    }
+    for (int i = 0; i < 3; i++){
+         c.bottom[i][2] = c.front[i][2];     // bottom <- front col
+    }
+    for (int i = 0; i < 3; i++){
+         c.front[i][2]  = temp[i];           // front <- saved top col
+    }
 }
 
 
 
 
-void rotateBottomClockwise(cube &c){
-int new_back [3][3];
-int new_right [3][3];
-int new_bottom [3][3];
-int new_left [3][3];
-int new_front [3][3];
+// rotates the bottom face clockwise
+// Rubik's notation D
+// equivalent to rotating the front's bottom row to the RIGHT
+void rotateBottomClockwise(cube &c) {
+    int new_bottom[3][3];
 
-//left face rotation shenanigans
+    // rotate bottom face 90° clockwise
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            new_bottom[j][2 - i] = c.bottom[i][j];
+        }
+    }
+    memcpy(c.bottom, new_bottom, sizeof(new_bottom));
 
-//front rotation shenanigans
+    // Save front bottom row
+    int temp[3];
+    for (int i = 0; i < 3; i++) {
+        temp[i] = c.front[2][i];
+    }
 
-//back face rotation shenanigans
+    // Cycle the rows clockwise
+    for (int i = 0; i < 3; i++) {
+        int oldRight = c.right[2][i];
+        int oldBack  = c.back[2][i];
+        int oldLeft  = c.left[2][i];
 
-//bottom face rotation shenanigans
+        c.front[2][i] = oldRight; // front <- right
+        c.right[2][i] = oldBack;  // right <- back
+        c.back[2][i]  = oldLeft;  // back  <- left
+        c.left[2][i]  = temp[i];  // left  <- front
+    }
+}
 
-//top face rotation shenanigans
+// rotates the bottom face counter-clockwise
+// Rubik's notation D'
+// equivalent to rotating the front's bottom row to the LEFT
+void rotateBottomCounterclockwise(cube &c) {
+    int new_bottom[3][3];
 
+    // rotate bottom face 90° counter-clockwise
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            new_bottom[2 - j][i] = c.bottom[i][j];
+        }
+    }
+    memcpy(c.bottom, new_bottom, sizeof(new_bottom));
 
-//copy new arrays back to cube
-memcpy(c.back,   new_back,   sizeof(new_back));
-memcpy(c.right,  new_right,  sizeof(new_right));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.bottom, new_bottom, sizeof(new_bottom));
-memcpy(c.front,  new_front,  sizeof(new_front));
+    // Save front bottom row
+    int temp[3];
+    for (int i = 0; i < 3; i++) {
+        temp[i] = c.front[2][i];
+    }
+
+    // Cycle the rows counter-clockwise
+    for (int i = 0; i < 3; i++) {
+        int oldRight = c.right[2][i];
+        int oldBack  = c.back[2][i];
+        int oldLeft  = c.left[2][i];
+
+        c.front[2][i] = oldLeft;  // front <- left
+        c.left[2][i]  = oldBack;  // left  <- back
+        c.back[2][i]  = oldRight; // back  <- right
+        c.right[2][i] = temp[i];  // right <- front
+    }
 }
 
 
 
 
-void rotateBottomCounterclockwise(cube &c){
-int new_back [3][3];
-int new_right [3][3];
-int new_bottom [3][3];
-int new_left [3][3];
-int new_front [3][3];
 
-//left face rotation shenanigans
-
-//front rotation shenanigans
-
-//back face rotation shenanigans
-
-//bottom face rotation shenanigans
-
-//top face rotation shenanigans
-
-
-//copy new arrays back to cube
-memcpy(c.back,   new_back,   sizeof(new_back));
-memcpy(c.right,  new_right,  sizeof(new_right));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.bottom, new_bottom, sizeof(new_bottom));
-memcpy(c.front,  new_front,  sizeof(new_front));
-}
-
-
-
-
+// rotates the top face clockwise
+// rubix notation U
+// equivalent to rotating the fronts top row to the right
 void rotateTopClockwise(cube &c){
-int new_back [3][3];
-int new_right [3][3];
+
 int new_top [3][3];
-int new_left [3][3];
-int new_front [3][3];
-
-//left face rotation shenanigans
-
-//front rotation shenanigans
-
-//back face rotation shenanigans
-
-//bottom face rotation shenanigans
-
-//top face rotation shenanigans
 
 
-//copy new arrays back to cube
-memcpy(c.back,   new_back,   sizeof(new_back));
-memcpy(c.right,  new_right,  sizeof(new_right));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.top,    new_top,    sizeof(new_top));
-memcpy(c.front,  new_front,  sizeof(new_front));
+for(int i = 0; i < 3; i++){
+    for(int j = 0; j < 3; j++){
+        new_top[j][2-i] = c.top[i][j]; // rotate top face clockwise 90
+    }
+}
+
+memcpy(c.top, new_top, sizeof(new_top));
+
+// Save front top row
+int temp[3];
+for (int i = 0; i < 3; i++) {
+    temp[i] = c.front[0][i];
+}
+
+// Cycle the rows clockwise
+for (int i = 0; i < 3; i++) {
+    int oldRight = c.right[0][i];
+    int oldBack = c.back[0][i];
+    int oldLeft = c.left[0][i];
+
+    c.front[0][i] = oldRight; // front <- right
+    c.right[0][i] = oldBack;  // right <- back
+    c.back[0][i] = oldLeft;   // back <- left
+    c.left[0][i] = temp[i];   // left <- front 
+    }
+
 }
 
 
 
-
+// rotates the top face counter-clockwise
+// rubix notation U'
+// equivalent to rotating the fronts top row to the left
 void rotateTopCounterclockwise(cube &c){
-int new_back [3][3];
-int new_right [3][3];
-int new_top [3][3];
-int new_left [3][3];
-int new_front [3][3];
+    int new_top [3][3];
 
-//left face rotation shenanigans
+    //rotate top face counterclockwise 90
+    for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 3; j++){
+            new_top[2-j][i] = c.top[i][j];
+        }
+    }
 
-//front rotation shenanigans
+    memcpy(c.top, new_top, sizeof(new_top));
 
-//back face rotation shenanigans
+    // Save front top row
+     int temp[3];
+    for (int i = 0; i < 3; i++) {
+    temp[i] = c.front[0][i];
+   }
 
-//bottom face rotation shenanigans
+    for (int i = 0; i < 3; i++) {
 
-//top face rotation shenanigans
+    int oldRight = c.right[0][i];
+    int oldBack = c.back[0][i];
+    int oldLeft = c.left[0][i];
 
-
-//copy new arrays back to cube
-memcpy(c.back,   new_back,   sizeof(new_back));
-memcpy(c.right,  new_right,  sizeof(new_right));
-memcpy(c.left,   new_left,   sizeof(new_left));
-memcpy(c.top,    new_top,    sizeof(new_top));
-memcpy(c.front,  new_front,  sizeof(new_front));
+    c.front[0][i] = oldLeft; // front <- left
+    c.left [0][i] = oldBack; // left <- back
+    c.back[0][i] = oldRight; // back <- right
+    c.right[0][i] = temp[i]; // right <- front
+    }
 }
 
 
 
 
 // randomizes the cube with n random moves
-void randomizeCube(cube &c, int n){
+vector<string> randomizeCube(cube &c, int n){
 // needs to record the moves made 
 // there should not be more that two consecutive moves on the same face
 
@@ -575,7 +565,7 @@ void randomizeCube(cube &c, int n){
                 break;
             case 3:
                 moves[i] = "B'";
-                rotateBackCounterClockwise(c);
+                rotateBackCounterclockwise(c);
                 break;
             case 4:
                 moves[i] = "L";
@@ -614,8 +604,9 @@ void randomizeCube(cube &c, int n){
     }
     cout << "The cube has been randomized with the following moves: ";
     // print moves
-    for (int i = 0; i < n; i++){
+    for (int i = 0; i < moves.size(); i++) {
         cout << moves[i] << " ";
     }
-
+    cout << endl;
+    return moves;
 }

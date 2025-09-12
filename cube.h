@@ -1,3 +1,19 @@
+/*
+    cube.h file for sodoku cube simulator
+    Made by Cameron Hunter
+    Programing buddy: Rian
+    Date Started: September 10, 2025
+    Date Finished: 9/12/2025
+
+    This file contatins a struct for the cube
+    This file also contains declartions for 
+    rotation functions, print functions, a reset function, 
+    a randomize function and declares the function to 
+    calculate the heuristic value of the cube
+*/
+#include <string>
+#include <vector>
+
 struct cube{
     int front[3][3];
     int back[3][3];
@@ -19,4 +35,4 @@ void rotateLeftClockwise(cube &c);
 void rotateLeftCounterclockwise(cube &c);
 void rotateRightClockwise(cube &c);
 void rotateRightCounterclockwise(cube &c);
-void randomizeCube(cube &c, int n);
+std::vector<std::string> randomizeCube(cube &c, int n);
