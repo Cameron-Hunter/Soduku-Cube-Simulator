@@ -23,10 +23,20 @@ struct cube{
     int bottom[3][3];
 };
 
+extern cube solvedCube; // global variable to hold the solved state of the cube
+
+
+
+
+// Prints the 6 faces of the cube in an unfolded layout
 void printCube(cube c);
 
+
+// Resets the cube to the solved state
 void resetCube(cube &c);
 
+
+// rotation functions
 void rotateFrontClockwise(cube &c);
 void rotateFrontCounterclockwise(cube &c);
 void rotateBackClockwise(cube &c);
@@ -36,3 +46,15 @@ void rotateLeftCounterclockwise(cube &c);
 void rotateRightClockwise(cube &c);
 void rotateRightCounterclockwise(cube &c);
 std::vector<std::string> randomizeCube(cube &c, int n);
+
+
+// Hueristic function declaration and helper functions
+
+int calculateHeuristic(cube &c);
+
+// compares the cube to the solved state and counts the number of misplaced pieces
+int countMisplaced(cube &c);
+
+// counts the number of conflits on the cube.
+// conflicts when the same number apears on the same face
+int countConflicts(cube &c);

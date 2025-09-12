@@ -11,6 +11,12 @@
 
 
 
+
+
+
+
+
+
 #include <iostream>
 #include <string>
 #include <cstdlib>
@@ -20,8 +26,16 @@ using namespace std;
 
 
 
+
+
+
+
+
+
+
 int main() {
 
+    int hueristicValue;
     string userInput; 
     cube myCube;
     vector<string> moves;
@@ -37,7 +51,8 @@ int main() {
     printCube(myCube);
     cout << endl;
     // option menu
-    cout<< "THe Heuristic value of this cube is: "<<endl;
+    hueristicValue = calculateHeuristic(myCube);
+    cout<< "The Heuristic value of this cube is: "<<hueristicValue <<endl;
     cout<<endl;
 
     cout<<"The following options are in Rubix cube notation."<<endl;

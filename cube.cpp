@@ -24,6 +24,32 @@
 using namespace std;
 
 
+
+// Definition and initialization
+cube solvedCube = {
+    // front
+    {{9,5,2},{3,8,1},{6,7,4}},
+    // back
+    {{9,5,2},{3,8,1},{6,7,4}},
+    // left
+    {{7,1,8},{2,4,6},{9,3,5}},
+    // right
+    {{4,6,3},{7,5,9},{1,2,8}},
+    // top
+    {{8,1,3},{4,6,7},{2,9,5}},
+    // bottom
+    {{1,2,8},{5,3,9},{7,4,6}}
+};
+
+
+
+
+
+
+
+
+
+
 // prints the cube in a unfolded layout
 void printCube(cube c){
     cout<<"        -------"<<endl;
@@ -77,29 +103,28 @@ void printCube(cube c){
 
 
 
+
+
+
+
+
+
 // resets the cube to the solved state
+// solved state is defined in cube.h
 void resetCube(cube &c){
-    cube resetCube;
-
-    // solved state of the cube 
-    //from canvas SodokuCube.mov file
-    int front[3][3] = {{9,5,2},{3,8,1},{6,7,4}};
-    int right[3][3] = {{4,6,3},{7,5,9},{1,2,8}};
-    int back[3][3] =  {{9,5,2},{3,8,1},{6,7,4}};
-    int left[3][3] =  {{7,1,8},{2,4,6},{9,3,5}};
-    int top[3][3] =   {{8,1,3},{4,6,7},{2,9,5}};
-    int bottom[3][3] = {{1,2,8},{5,3,9},{7,4,6}};
-
-    memcpy(c.front,  front,  sizeof(front));
-    memcpy(c.right,  right,  sizeof(right));
-    memcpy(c.back,   back,   sizeof(back));
-    memcpy(c.left,   left,   sizeof(left));
-    memcpy(c.top,    top,    sizeof(top));
-    memcpy(c.bottom, bottom, sizeof(bottom));
+    c = solvedCube;
 }
 
 
 
+
+
+
+
+
+
+
+//Rotation functions
 
 // rotates the front face clockwise
 // Rubik's notation: F
@@ -135,6 +160,10 @@ void rotateFrontClockwise(cube &c) {
         c.right[i][0]  = temp[i];          // right <- saved top row
     }     
 }
+
+
+
+
 
 
 
@@ -178,6 +207,10 @@ void rotateFrontCounterclockwise(cube &c) {
 
 
 
+
+
+
+
 // rotates the back face clockwise
 // Rubik's notation: B
 // (clockwise when looking directly at the back face)
@@ -210,6 +243,10 @@ void rotateBackClockwise(cube &c) {
          c.left[i][0]   = temp[2 - i];        // left <- saved top row (reversed)
     }
 }
+
+
+
+
 
 
 
@@ -254,6 +291,10 @@ void rotateBackCounterclockwise(cube &c)  {
 
 
 
+
+
+
+
 // makes the L rotation on the cube
 // equivalent to rotating the fronts left column downwards
 void rotateLeftClockwise(cube &c){
@@ -285,6 +326,11 @@ void rotateLeftClockwise(cube &c){
          c.front[i][0]  = temp[i];               // front <- saved top col
     }
 }
+
+
+
+
+
 
 
 
@@ -325,6 +371,11 @@ void rotateLeftCounterclockwise(cube &c){
     
 
 
+
+
+
+
+
 // makes the R rotation on the cube
 // equivalent to rotating the fronts right column upwards
 void rotateRightClockwise(cube &c){
@@ -356,6 +407,11 @@ void rotateRightClockwise(cube &c){
          c.back[i][0]   = temp[2 - i];       // back <- saved top col (reversed)
     }
 }
+
+
+
+
+
 
 
 
@@ -395,6 +451,11 @@ void rotateRightCounterclockwise(cube &c){
 
 
 
+
+
+
+
+
 // rotates the bottom face clockwise
 // Rubik's notation D
 // equivalent to rotating the front's bottom row to the RIGHT
@@ -428,6 +489,14 @@ void rotateBottomClockwise(cube &c) {
     }
 }
 
+
+
+
+
+
+
+
+
 // rotates the bottom face counter-clockwise
 // Rubik's notation D'
 // equivalent to rotating the front's bottom row to the LEFT
@@ -460,6 +529,10 @@ void rotateBottomCounterclockwise(cube &c) {
         c.right[2][i] = temp[i];  // right <- front
     }
 }
+
+
+
+
 
 
 
@@ -503,6 +576,13 @@ for (int i = 0; i < 3; i++) {
 
 
 
+
+
+
+
+
+
+
 // rotates the top face counter-clockwise
 // rubix notation U'
 // equivalent to rotating the fronts top row to the left
@@ -536,6 +616,11 @@ void rotateTopCounterclockwise(cube &c){
     c.right[0][i] = temp[i]; // right <- front
     }
 }
+
+
+
+
+
 
 
 
@@ -609,4 +694,174 @@ vector<string> randomizeCube(cube &c, int n){
     }
     cout << endl;
     return moves;
+}
+
+
+
+
+
+
+
+
+
+// Hueristic functions
+
+
+// calculates the heuristic value of the cube
+int calculateHeuristic(cube &c){
+    int misplaced = countMisplaced(c);
+    int conflicts = countConflicts(c);
+
+    // reason for dividing misplaced by 2:
+    // There will be a ton of misplaced pieces on the cube
+    // i don't think that is a good representation of how far the cube is from being solved
+    // each move can correct multiple misplaced pieces at once
+    // i think the conflicts are much more important to fix on the cube
+    return (misplaced/2) + conflicts;
+}
+
+
+
+
+
+
+
+
+
+// counts the number of misplaced pieces on the cube
+int countMisplaced(cube &c){
+    int count = 0;
+
+    // compare each face to the solved cube state
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            if (c.front[i][j] != solvedCube.front[i][j]){
+                count++;
+            }
+            if (c.back[i][j] != solvedCube.back[i][j]){
+                count++;
+            }
+            if (c.left[i][j] != solvedCube.left[i][j]){
+                count++;
+            }
+            if (c.right[i][j] != solvedCube.right[i][j]){
+                count++;
+            }
+            if (c.top[i][j] != solvedCube.top[i][j]){
+                count++;
+            }
+            if (c.bottom[i][j] != solvedCube.bottom[i][j]){
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+
+
+
+
+
+
+
+
+// counts the number of conflicts on the cube
+// conflicts when the same number apears on the same face
+int countConflicts(cube &c){
+    int conflicts = 0;
+    int frequences[10]; // index 0 unused, numbers 1-9
+
+    // check each face for conflicts
+    // front face
+    for(int i = 0; i < 3; i++){
+        for(int k = 1; k <= 9; k++){
+            frequences[k] = 0; // reset frequencies
+        }
+        for(int j = 0; j < 3; j++){
+            frequences[c.front[i][j]]++;
+        }
+        for(int k = 1; k <= 9; k++){
+            if(frequences[k] > 1){
+                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
+            }
+        }
+    }
+
+    // back face
+    for(int i = 0; i < 3; i++){
+        for(int k = 1; k <= 9; k++){
+            frequences[k] = 0; // reset frequencies
+        }
+        for(int j = 0; j < 3; j++){
+            frequences[c.back[i][j]]++;
+        }
+        for(int k = 1; k <= 9; k++){
+            if(frequences[k] > 1){
+                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
+            }
+        }
+    }
+
+    // left face
+    for(int i = 0; i < 3; i++){
+        for(int k = 1; k <= 9; k++){
+            frequences[k] = 0; // reset frequencies
+        }
+        for(int j = 0; j < 3; j++){
+            frequences[c.left[i][j]]++;
+        }
+        for(int k = 1; k <= 9; k++){
+            if(frequences[k] > 1){
+                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
+            }
+        }
+    }
+
+    // right face
+    for(int i = 0; i < 3; i++){
+        for(int k = 1; k <= 9; k++){
+            frequences[k] = 0; // reset frequencies
+        }
+        for(int j = 0; j < 3; j++){
+            frequences[c.right[i][j]]++;
+        }
+        for(int k = 1; k <= 9; k++){
+            if(frequences[k] > 1){
+                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
+            }
+        }
+    }
+
+    //top face
+    for(int i = 0; i < 3; i++){
+        for(int k = 1; k <= 9; k++){
+            frequences[k] = 0; // reset frequencies
+        }
+        for(int j = 0; j < 3; j++){
+            frequences[c.top[i][j]]++;
+        }
+        for(int k = 1; k <= 9; k++){
+            if(frequences[k] > 1){
+                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
+            }
+        }
+    }
+
+    // bottom face
+    for(int i = 0; i < 3; i++){
+        for(int k = 1; k <= 9; k++){
+            frequences[k] = 0; // reset frequencies
+        }
+        for(int j = 0; j < 3; j++){
+            frequences[c.left[i][j]]++;
+        }
+        for(int k = 1; k <= 9; k++){
+            if(frequences[k] > 1){
+                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
+            }
+        }
+    }
+    return conflicts;
+
 }
