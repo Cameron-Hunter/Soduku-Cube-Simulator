@@ -20,85 +20,122 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <ctime>
 
 using namespace std;
+
+
+
+
+
+
+
+
+
+// helper function to create a tile with a number and corresponding color
+tile makeTile(int n, int colorCode) {
+    tile newTile;
+    newTile.number = n;
+    newTile.color = ansiColorFromCode(colorCode);
+    
+    return newTile;
+}
+
+
+std::string ansiColorFromCode(int code) {
+    switch (code) {
+        case 1: return "\x1b[34m";        // Blue
+        case 2: return "\x1b[36m";        // Cyan
+        case 3: return "\x1b[31m";        // Red
+        case 4: return "\x1b[32m";        // Green
+        case 5: return "\x1b[33m";        // Yellow
+        case 6: return "\x1b[38;5;208m";  // Orange (256-color)
+        default: return "\x1b[0m";        // Reset/fallback
+    }
+}
+
+
+
+
 
 
 
 // Definition and initialization
 cube solvedCube = {
     // front
-    {{9,5,2},{3,8,1},{6,7,4}},
+    {{makeTile(9,2),makeTile(5,3),makeTile(2,1)},{makeTile(3,3),makeTile(8,5),makeTile(1,4)},{makeTile(6,6),makeTile(7,5),makeTile(4,3)}},
     // back
-    {{9,5,2},{3,8,1},{6,7,4}},
+    {{makeTile(9,1),makeTile(5,2),makeTile(2,2)},{makeTile(3,4),makeTile(8,1),makeTile(1,1)},{makeTile(6,1),makeTile(7,1),makeTile(4,5)}},
     // left
-    {{7,1,8},{2,4,6},{9,3,5}},
+    {{makeTile(7,1),makeTile(1,2),makeTile(8,5)},{makeTile(2,4),makeTile(4,2),makeTile(6,1)},{makeTile(9,2),makeTile(3,2),makeTile(5,5)}},
     // right
-    {{4,6,3},{7,5,9},{1,2,8}},
+    {{makeTile(4,2),makeTile(6,6),makeTile(3,3)},{makeTile(7,5),makeTile(5,4),makeTile(9,6)},{makeTile(1,5),makeTile(2,3),makeTile(8,6)}},
     // top
-    {{8,1,3},{4,6,7},{2,9,5}},
+    {{makeTile(8,3),makeTile(1,5),makeTile(3,4)},{makeTile(4,6),makeTile(6,6),makeTile(7,1)},{makeTile(2,3),makeTile(9,4),makeTile(5,6)}},
     // bottom
-    {{1,2,8},{5,3,9},{7,4,6}}
+    {{makeTile(1,4),makeTile(2,6),makeTile(8,4)},{makeTile(5,3),makeTile(3,3),makeTile(9,5)},{makeTile(7,6),makeTile(4,2),makeTile(6,4)}}
 };
 
 
 
 
-
-
+void printTile(const tile &t){
+    cout << t.color << t.number << "\033[0m"; // Print number with color and reset color
+}
 
 
 
 
 // prints the cube in a unfolded layout
 void printCube(cube c){
-    cout<<"        -------"<<endl;
+    cout<<"         -------"<<endl;
     // Print top face
     for(int i = 0; i < 3; i++){
-        cout << "       | ";
+        cout << "        | ";
         for(int j = 0; j < 3; j++){
-            cout << c.top[i][j] << " ";
+            printTile(c.top[i][j]);
+            cout << " ";
         }
         cout <<"|"<< endl;
     }
     cout<<" ------------------------------"<<endl;
     // Print left, front, right, back faces
-    for(int i = 0; i < 3; i++){
-        cout <<"|";
-        //left face
-        for (int j = 0; j < 3; j++)
-        {
-            cout<< c.left[i][j] << " ";
-        }
-        cout << "| ";
-        //Front face
-        for(int j = 0; j < 3; j++){
-            cout << c.front[i][j] << " ";
-        }
-        cout << "| ";
-        //right Face
-        for(int j = 0; j < 3; j++){
-            cout << c.right[i][j] << " ";
-        }
-        cout << "| ";
-        //back face
-        for(int j = 0; j < 3; j++){
-            cout << c.back[i][j] << " ";
-        }   
-        cout << "| " ;
-        cout << endl;
+    // Left, Front, Right, Back
+
+for (int i = 0; i < 3; i++) {
+    std::cout << "| ";
+    for (int j = 0; j < 3; j++) {
+         printTile(c.left[i][j]);
+         cout << " ";
+         }
+    std::cout << "| ";
+    for (int j = 0; j < 3; j++) {
+         printTile(c.front[i][j]);
+         cout<< " ";
+         }
+    std::cout << "| ";
+    for (int j = 0; j < 3; j++) { printTile(c.right[i][j]); 
+    cout << " ";
     }
+    std::cout << "| ";
+    for (int j = 2; j >= 0; j--) { 
+        printTile(c.back[i][j]); 
+        cout << " ";
+    } // flipped
+    std::cout << "|" << std::endl;
+}
       cout<<" ------------------------------"<<endl;
     // Print bottom face
     for(int i = 0; i < 3; i++){
-        cout << "       | ";
+        cout << "        | ";
         for(int j = 0; j < 3; j++){
-            cout << c.bottom[i][j] << " ";
+            printTile(c.bottom[i][j]);
+            cout << " ";
         }
         cout <<"|" <<endl;
 
     }
-     cout<<"        -------"<<endl;
+     cout<<"         -------"<<endl;
 }
 
 
@@ -130,35 +167,35 @@ void resetCube(cube &c){
 // Rubik's notation: F
 
 void rotateFrontClockwise(cube &c) {
-    // rotate the front face
-    int new_front[3][3];
+    tile new_front[3][3];
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             new_front[j][2 - i] = c.front[i][j];
-        }    
-    }    
+        }
+    }
+    for (int i = 0; i < 3; i++) {
+         for (int j = 0; j < 3; j++) {
+            c.front[i][j] = new_front[i][j];  
+    }
+}
 
-    memcpy(c.front, new_front, sizeof(new_front));
-
-    // cycle the edge strips
-    int temp[3];
-    // save bottom row of top
+    tile temp[3];
+    for (int i = 0; i < 3; i++){ 
+        temp[i] = c.top[2][i];
+    }
     for (int i = 0; i < 3; i++){
-         temp[i] = c.top[2][i];          
+     c.top[2][i]    = c.left[2 - i][2];
     }
 
     for (int i = 0; i < 3; i++){
-        c.top[2][i]    = c.left[2 - i][2]; // top <- left col (reversed)
+         c.left[i][2]   = c.bottom[0][i];
+    }
+    for (int i = 0; i < 3; i++){ 
+        c.bottom[0][i] = c.right[2 - i][0];
     }
     for (int i = 0; i < 3; i++){
-         c.left[i][2]   = c.bottom[0][i];  // left <- bottom row
-    }  
-    for (int i = 0; i < 3; i++){
-        c.bottom[0][i] = c.right[2 - i][0];// bottom <- right col (reversed)
+         c.right[i][0]  = temp[i];
     }
-    for (int i = 0; i < 3; i++){
-        c.right[i][0]  = temp[i];          // right <- saved top row
-    }     
 }
 
 
@@ -173,17 +210,22 @@ void rotateFrontClockwise(cube &c) {
 // Rubik's notation: F'
 void rotateFrontCounterclockwise(cube &c) {
     // rotate the front face
-    int new_front[3][3];
+    tile new_front[3][3];
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             new_front[2 - j][i] = c.front[i][j];
         }
     }
 
-    memcpy(c.front, new_front, sizeof(new_front));
+   for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.front[i][j] = new_front[i][j];  
+    }
+    }
+
 
     // cycle the edge strips (reverse of F)
-    int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++){
          temp[i] = c.top[2][i];                 // save bottom row of top
     }
@@ -216,16 +258,21 @@ void rotateFrontCounterclockwise(cube &c) {
 // (clockwise when looking directly at the back face)
 void rotateBackClockwise(cube &c) {
     // rotate the back face itself
-    int new_back[3][3];
+    tile new_back[3][3];
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             new_back[j][2 - i] = c.back[i][j];
         }
     }
-    memcpy(c.back, new_back, sizeof(new_back));
+
+    for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.back[i][j] = new_back[i][j];  
+    }
+    }   
 
     // cycle the adjacent strips
-    int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++){
          temp[i] = c.top[0][i];          // save top row of top
     }
@@ -258,16 +305,21 @@ void rotateBackClockwise(cube &c) {
 //and vice versa
 void rotateBackCounterclockwise(cube &c)  {
     // rotate the back face itself
-    int new_back[3][3];
+    tile new_back[3][3];
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             new_back[2 - j][i] = c.back[i][j];
         }
     }
-    memcpy(c.back, new_back, sizeof(new_back));
+    
+    for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.back[i][j] = new_back[i][j];  
+    }
+    }   
 
     // cycle the adjacent strips (reverse of B)
-    int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++){
          temp[i] = c.top[0][i];          // save top row of top
     }
@@ -299,16 +351,21 @@ void rotateBackCounterclockwise(cube &c)  {
 // equivalent to rotating the fronts left column downwards
 void rotateLeftClockwise(cube &c){
   // rotate the left face itself
-    int new_left[3][3];
+    tile new_left[3][3];
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             new_left[j][2 - i] = c.left[i][j];
         }
     }
-    memcpy(c.left, new_left, sizeof(new_left));
+
+    for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.left[i][j] = new_left[i][j];  
+    }
+    }   
 
     // cycle the adjacent strips
-    int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++){
         temp[i] = c.top[i][0];                  // save left col of top
     }
@@ -339,17 +396,21 @@ void rotateLeftClockwise(cube &c){
 // equivalent to rotating the fronts left column upwards
 void rotateLeftCounterclockwise(cube &c){
   // rotate the left face itself
-    int new_left[3][3];
+    tile new_left[3][3];
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             new_left[2 - j][i] = c.left[i][j];
         }
     }
 
-    memcpy(c.left, new_left, sizeof(new_left));
+    for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.left[i][j] = new_left[i][j];  
+    }
+    }   
 
     // cycle the adjacent strips (reverse of L)
-    int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++){
          temp[i] = c.top[i][0];          // save left col of top
     }
@@ -380,16 +441,21 @@ void rotateLeftCounterclockwise(cube &c){
 // equivalent to rotating the fronts right column upwards
 void rotateRightClockwise(cube &c){
   // rotate the right face itself
-    int new_right[3][3];
+    tile new_right[3][3];
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             new_right[j][2 - i] = c.right[i][j];
         }
     }
-    memcpy(c.right, new_right, sizeof(new_right));
+
+    for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.right[i][j] = new_right[i][j];  
+    }
+    }   
 
     // cycle the adjacent strips
-    int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++){
          temp[i] = c.top[i][2];          // save right col of top
     }
@@ -420,16 +486,21 @@ void rotateRightClockwise(cube &c){
 // equivalent to rotating the fronts right column downwards
 void rotateRightCounterclockwise(cube &c){
  // rotate the right face itself
-    int new_right[3][3];
+    tile new_right[3][3];
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             new_right[2 - j][i] = c.right[i][j];
         }
     }
-    memcpy(c.right, new_right, sizeof(new_right));
+
+    for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.right[i][j] = new_right[i][j];  
+    }
+    }   
 
     // cycle the adjacent strips (reverse of R)
-    int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++){
          temp[i] = c.top[i][2];          // save right col of top
     }
@@ -460,7 +531,7 @@ void rotateRightCounterclockwise(cube &c){
 // Rubik's notation D
 // equivalent to rotating the front's bottom row to the RIGHT
 void rotateBottomClockwise(cube &c) {
-    int new_bottom[3][3];
+    tile new_bottom[3][3];
 
     // rotate bottom face 90° clockwise
     for (int i = 0; i < 3; i++) {
@@ -468,19 +539,24 @@ void rotateBottomClockwise(cube &c) {
             new_bottom[j][2 - i] = c.bottom[i][j];
         }
     }
-    memcpy(c.bottom, new_bottom, sizeof(new_bottom));
+
+    for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.bottom[i][j] = new_bottom[i][j];  
+    }
+    }   
 
     // Save front bottom row
-    int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++) {
         temp[i] = c.front[2][i];
     }
 
     // Cycle the rows clockwise
     for (int i = 0; i < 3; i++) {
-        int oldRight = c.right[2][i];
-        int oldBack  = c.back[2][i];
-        int oldLeft  = c.left[2][i];
+        tile oldRight = c.right[2][i];
+        tile oldBack  = c.back[2][i];
+        tile oldLeft  = c.left[2][i];
 
         c.front[2][i] = oldRight; // front <- right
         c.right[2][i] = oldBack;  // right <- back
@@ -501,7 +577,7 @@ void rotateBottomClockwise(cube &c) {
 // Rubik's notation D'
 // equivalent to rotating the front's bottom row to the LEFT
 void rotateBottomCounterclockwise(cube &c) {
-    int new_bottom[3][3];
+    tile new_bottom[3][3];
 
     // rotate bottom face 90° counter-clockwise
     for (int i = 0; i < 3; i++) {
@@ -509,19 +585,24 @@ void rotateBottomCounterclockwise(cube &c) {
             new_bottom[2 - j][i] = c.bottom[i][j];
         }
     }
-    memcpy(c.bottom, new_bottom, sizeof(new_bottom));
+    
+    for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.bottom[i][j] = new_bottom[i][j];  
+    }
+    }   
 
     // Save front bottom row
-    int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++) {
         temp[i] = c.front[2][i];
     }
 
     // Cycle the rows counter-clockwise
     for (int i = 0; i < 3; i++) {
-        int oldRight = c.right[2][i];
-        int oldBack  = c.back[2][i];
-        int oldLeft  = c.left[2][i];
+        tile oldRight = c.right[2][i];
+        tile oldBack  = c.back[2][i];
+        tile oldLeft  = c.left[2][i];
 
         c.front[2][i] = oldLeft;  // front <- left
         c.left[2][i]  = oldBack;  // left  <- back
@@ -543,7 +624,7 @@ void rotateBottomCounterclockwise(cube &c) {
 // equivalent to rotating the fronts top row to the right
 void rotateTopClockwise(cube &c){
 
-int new_top [3][3];
+tile new_top [3][3];
 
 
 for(int i = 0; i < 3; i++){
@@ -552,19 +633,23 @@ for(int i = 0; i < 3; i++){
     }
 }
 
-memcpy(c.top, new_top, sizeof(new_top));
+ for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.top[i][j] = new_top[i][j];  
+    }
+    }   
 
 // Save front top row
-int temp[3];
+tile temp[3];
 for (int i = 0; i < 3; i++) {
     temp[i] = c.front[0][i];
 }
 
 // Cycle the rows clockwise
 for (int i = 0; i < 3; i++) {
-    int oldRight = c.right[0][i];
-    int oldBack = c.back[0][i];
-    int oldLeft = c.left[0][i];
+    tile oldRight = c.right[0][i];
+    tile oldBack = c.back[0][i];
+    tile oldLeft = c.left[0][i];
 
     c.front[0][i] = oldRight; // front <- right
     c.right[0][i] = oldBack;  // right <- back
@@ -587,7 +672,7 @@ for (int i = 0; i < 3; i++) {
 // rubix notation U'
 // equivalent to rotating the fronts top row to the left
 void rotateTopCounterclockwise(cube &c){
-    int new_top [3][3];
+     tile new_top [3][3];
 
     //rotate top face counterclockwise 90
     for(int i = 0; i < 3; i++){
@@ -596,19 +681,23 @@ void rotateTopCounterclockwise(cube &c){
         }
     }
 
-    memcpy(c.top, new_top, sizeof(new_top));
+     for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+        c.top[i][j] = new_top[i][j];  
+    }
+    }   
 
     // Save front top row
-     int temp[3];
+    tile temp[3];
     for (int i = 0; i < 3; i++) {
     temp[i] = c.front[0][i];
    }
 
     for (int i = 0; i < 3; i++) {
 
-    int oldRight = c.right[0][i];
-    int oldBack = c.back[0][i];
-    int oldLeft = c.left[0][i];
+    tile oldRight = c.right[0][i];
+    tile oldBack = c.back[0][i];
+    tile oldLeft = c.left[0][i];
 
     c.front[0][i] = oldLeft; // front <- left
     c.left [0][i] = oldBack; // left <- back
@@ -619,22 +708,56 @@ void rotateTopCounterclockwise(cube &c){
 
 
 
+// Map each move to its face (F=0, B=1, L=2, R=3, D=4, U=5)
+int moveFaceIndex(int moveIndex) {
+    return moveIndex / 2;
+}
 
-
-
-
+// Find the inverse of a move (e.g., F <-> F')
+int inverseMoveIndex(int moveIndex) {
+    if (moveIndex % 2 == 0) {
+        return moveIndex + 1; // F -> F', B -> B', etc.
+    } else {
+        return moveIndex - 1; // F' -> F, B' -> B, etc.
+    }
+}
 
 
 // randomizes the cube with n random moves
 vector<string> randomizeCube(cube &c, int n){
 // needs to record the moves made 
 // there should not be more that two consecutive moves on the same face
-
+    srand(time(0));
     int randNum;
     vector<string> moves(n);
 
+    int repeatCount = 0;
+    int lastMoveIndex = -1; // Initialize to an invalid index
+    int lastFaceIndex = -1; // Initialize to an invalid face index
+
+   
     for (int i = 0; i < n; i++){
+
+        int moveIndex;
+
+        while(true){
         randNum = rand() % 12; // generates a random number between 0 and 11
+        int currentFaceIndex = moveFaceIndex(randNum);
+
+        bool validMove = true;
+        // Check for inverse move
+        if(lastMoveIndex != -1 && randNum == inverseMoveIndex(lastMoveIndex)){
+            validMove = false;
+        }
+
+        // Check for 2 repeats on the same face
+        if(currentFaceIndex == lastFaceIndex && repeatCount >= 2){
+            validMove = false;
+        }
+
+        if(validMove){break;}
+        }
+        
         switch(randNum){
             case 0:
                 moves[i] = "F";
@@ -686,6 +809,17 @@ vector<string> randomizeCube(cube &c, int n){
                 break;
             
         }
+
+        int currentFaceIndex = moveFaceIndex(randNum);
+        if(currentFaceIndex == lastFaceIndex){
+            repeatCount++;
+        } else {
+            repeatCount = 1; // reset count for new face
+            lastFaceIndex = currentFaceIndex;
+        }
+
+        //update last move index
+        lastMoveIndex = randNum;
     }
     cout << "The cube has been randomized with the following moves: ";
     // print moves
@@ -766,102 +900,54 @@ int countMisplaced(cube &c){
 
 
 
-// counts the number of conflicts on the cube
-// conflicts when the same number apears on the same face
-int countConflicts(cube &c){
+// helper function to count conflicts in a single face
+int countConflictsInFace(tile face[3][3]) {
     int conflicts = 0;
-    int frequences[10]; // index 0 unused, numbers 1-9
 
-    // check each face for conflicts
-    // front face
-    for(int i = 0; i < 3; i++){
-        for(int k = 1; k <= 9; k++){
-            frequences[k] = 0; // reset frequencies
+    // Go row by row
+    for (int row = 0; row < 3; row++) {
+        int frequencies[10]; 
+        for (int k = 0; k < 10; k++) {
+            frequencies[k] = 0; // reset frequencies for each row
         }
-        for(int j = 0; j < 3; j++){
-            frequences[c.front[i][j]]++;
+
+        // Count occurrences of each number in this row
+        for (int col = 0; col < 3; col++) {
+            int num = face[row][col].number;
+            if (num >= 1 && num <= 9) {
+                frequencies[num]++;
+            }
         }
-        for(int k = 1; k <= 9; k++){
-            if(frequences[k] > 1){
-                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
+
+        // Check for duplicates in this row
+        for (int k = 1; k <= 9; k++) {
+            if (frequencies[k] > 1) {
+                conflicts += (frequencies[k] - 1);
             }
         }
     }
 
-    // back face
-    for(int i = 0; i < 3; i++){
-        for(int k = 1; k <= 9; k++){
-            frequences[k] = 0; // reset frequencies
-        }
-        for(int j = 0; j < 3; j++){
-            frequences[c.back[i][j]]++;
-        }
-        for(int k = 1; k <= 9; k++){
-            if(frequences[k] > 1){
-                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
-            }
-        }
-    }
-
-    // left face
-    for(int i = 0; i < 3; i++){
-        for(int k = 1; k <= 9; k++){
-            frequences[k] = 0; // reset frequencies
-        }
-        for(int j = 0; j < 3; j++){
-            frequences[c.left[i][j]]++;
-        }
-        for(int k = 1; k <= 9; k++){
-            if(frequences[k] > 1){
-                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
-            }
-        }
-    }
-
-    // right face
-    for(int i = 0; i < 3; i++){
-        for(int k = 1; k <= 9; k++){
-            frequences[k] = 0; // reset frequencies
-        }
-        for(int j = 0; j < 3; j++){
-            frequences[c.right[i][j]]++;
-        }
-        for(int k = 1; k <= 9; k++){
-            if(frequences[k] > 1){
-                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
-            }
-        }
-    }
-
-    //top face
-    for(int i = 0; i < 3; i++){
-        for(int k = 1; k <= 9; k++){
-            frequences[k] = 0; // reset frequencies
-        }
-        for(int j = 0; j < 3; j++){
-            frequences[c.top[i][j]]++;
-        }
-        for(int k = 1; k <= 9; k++){
-            if(frequences[k] > 1){
-                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
-            }
-        }
-    }
-
-    // bottom face
-    for(int i = 0; i < 3; i++){
-        for(int k = 1; k <= 9; k++){
-            frequences[k] = 0; // reset frequencies
-        }
-        for(int j = 0; j < 3; j++){
-            frequences[c.left[i][j]]++;
-        }
-        for(int k = 1; k <= 9; k++){
-            if(frequences[k] > 1){
-                conflicts += frequences[k] - 1; // each extra occurrence is a conflict
-            }
-        }
-    }
     return conflicts;
+}
 
+
+
+
+
+
+
+
+
+// counts the number of conflicts on the cube
+int countConflicts(cube &c){
+ int conflicts = 0;
+
+    conflicts += countConflictsInFace(c.front);
+    conflicts += countConflictsInFace(c.back);
+    conflicts += countConflictsInFace(c.left);
+    conflicts += countConflictsInFace(c.right);
+    conflicts += countConflictsInFace(c.top);
+    conflicts += countConflictsInFace(c.bottom);
+
+ return conflicts;
 }

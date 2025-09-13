@@ -149,6 +149,30 @@ int main() {
         rotateRightCounterclockwise(myCube);
 
     }
+    else if (userInput == "U"|| userInput == "u"){
+        cout << "Rotating the top face clockwise..." << endl;
+        moves.push_back("U");
+        // rotate top face clockwise U Rubix notation
+        rotateTopClockwise(myCube);
+    }
+    else if (userInput == "U'"|| userInput == "u'"){
+        cout << "Rotating the top face counterclockwise..." << endl;
+        moves.push_back("U'");
+        // rotate top face counterclockwise U' Rubix notation
+        rotateTopCounterclockwise(myCube);
+    }
+    else if (userInput == "D"|| userInput == "d"){
+        cout << "Rotating the bottom face clockwise..." << endl;
+        moves.push_back("D");
+        // rotate bottom face clockwise D Rubix notation
+        rotateBottomClockwise(myCube);
+    }
+    else if (userInput == "D'"|| userInput == "d'"){
+        cout << "Rotating the bottom face counterclockwise..." << endl;
+        moves.push_back("D'");
+        // rotate bottom face counterclockwise D' Rubix notation
+        rotateBottomCounterclockwise(myCube);
+    }
     else{
         cout << "Invalid input. Please input a valid option." << endl;
     }

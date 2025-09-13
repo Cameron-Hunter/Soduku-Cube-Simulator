@@ -14,13 +14,29 @@
 #include <string>
 #include <vector>
 
+struct tile{
+    int number; // 0-9 number on the cube
+    std::string color; // color of the tile
+
+    bool operator==(const tile &other) const {
+        return number == other.number && color == other.color; // compare based on number only
+    }
+
+    bool operator!=(const tile &other) const {
+        return !(*this == other); // use the equality operator to define inequality
+    }
+};
+
+std::string ansiColorFromCode(int code);
+tile makeTile(int n, int colorCode);
+
 struct cube{
-    int front[3][3];
-    int back[3][3];
-    int left[3][3];
-    int right[3][3];
-    int top[3][3];
-    int bottom[3][3];
+    tile front[3][3];
+    tile back[3][3];
+    tile left[3][3];
+    tile right[3][3];
+    tile top[3][3];
+    tile bottom[3][3];
 };
 
 extern cube solvedCube; // global variable to hold the solved state of the cube
@@ -29,7 +45,7 @@ extern cube solvedCube; // global variable to hold the solved state of the cube
 
 
 // Prints the 6 faces of the cube in an unfolded layout
-void printCube(cube c);
+void printCube(const cube c);
 
 
 // Resets the cube to the solved state
@@ -45,6 +61,10 @@ void rotateLeftClockwise(cube &c);
 void rotateLeftCounterclockwise(cube &c);
 void rotateRightClockwise(cube &c);
 void rotateRightCounterclockwise(cube &c);
+void rotateTopClockwise(cube &c);
+void rotateTopCounterclockwise(cube &c);
+void rotateBottomClockwise(cube &c);
+void rotateBottomCounterclockwise(cube &c);
 std::vector<std::string> randomizeCube(cube &c, int n);
 
 
