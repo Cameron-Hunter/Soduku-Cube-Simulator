@@ -1,7 +1,7 @@
 /*
     cube.cpp file for the Sodoku Cube Simulator
     Made by Cameron Hunter
-    Programing buddy: Rian
+    Programing buddy: Rian Gallaher
     Date Started: September 10, 2025
     Date Finished: 9/12/2025
 
@@ -41,14 +41,15 @@ tile makeTile(int n, int colorCode) {
     return newTile;
 }
 
-
+// these codes came from chatgpt 
+// i left the promts and other info in my readme file
 std::string ansiColorFromCode(int code) {
     switch (code) {
-        case 1: return "\x1b[34m";        // Blue
-        case 2: return "\x1b[36m";        // Cyan
-        case 3: return "\x1b[31m";        // Red
-        case 4: return "\x1b[32m";        // Green
-        case 5: return "\x1b[33m";        // Yellow
+        case 1: return "\033[34m";        // Blue
+        case 2: return "\033[38;5;30m";        // Cyan
+        case 3: return "\033[31m";        // Red
+        case 4: return "\033[32m";        // Green
+        case 5: return "\033[32m";        // Yellow
         case 6: return "\x1b[38;5;208m";  // Orange (256-color)
         default: return "\x1b[0m";        // Reset/fallback
     }
@@ -151,7 +152,6 @@ for (int i = 0; i < 3; i++) {
 void resetCube(cube &c){
     c = solvedCube;
 }
-
 
 
 
@@ -708,10 +708,25 @@ void rotateTopCounterclockwise(cube &c){
 
 
 
+
+
+
+
+
+//Randomization functions
 // Map each move to its face (F=0, B=1, L=2, R=3, D=4, U=5)
 int moveFaceIndex(int moveIndex) {
     return moveIndex / 2;
 }
+
+
+
+
+
+
+
+
+
 
 // Find the inverse of a move (e.g., F <-> F')
 int inverseMoveIndex(int moveIndex) {
@@ -721,6 +736,13 @@ int inverseMoveIndex(int moveIndex) {
         return moveIndex - 1; // F' -> F, B' -> B, etc.
     }
 }
+
+
+
+
+
+
+
 
 
 // randomizes the cube with n random moves
@@ -839,7 +861,6 @@ vector<string> randomizeCube(cube &c, int n){
 
 
 // Hueristic functions
-
 
 // calculates the heuristic value of the cube
 int calculateHeuristic(cube &c){

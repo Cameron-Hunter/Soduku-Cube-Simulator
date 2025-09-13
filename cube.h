@@ -1,7 +1,7 @@
 /*
     cube.h file for sodoku cube simulator
     Made by Cameron Hunter
-    Programing buddy: Rian
+    Programing buddy: Rian Gallagher
     Date Started: September 10, 2025
     Date Finished: 9/12/2025
 
